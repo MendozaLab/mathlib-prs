@@ -57,7 +57,10 @@ noncomputable def frobeniusInner (A B : Matrix n n ℂ) : ℂ :=
 /-- Conjugate symmetry: `⟨B, A⟩_F = star ⟨A, B⟩_F`. -/
 theorem frobeniusInner_conj_symm (A B : Matrix n n ℂ) :
     frobeniusInner B A = star (frobeniusInner A B) := by
-  sorry
+  -- ⟨B, A⟩_F = Tr(Bᴴ · A) = Tr((Aᴴ · B)ᴴ) = star (Tr(Aᴴ · B)) = star ⟨A, B⟩_F.
+  unfold frobeniusInner
+  rw [← Matrix.trace_conjTranspose, Matrix.conjTranspose_mul,
+      Matrix.conjTranspose_conjTranspose]
 
 /-- Additivity in the second argument: `⟨A, B + C⟩_F = ⟨A, B⟩_F + ⟨A, C⟩_F`. -/
 theorem frobeniusInner_add_right (A B C : Matrix n n ℂ) :
@@ -70,18 +73,27 @@ theorem frobeniusInner_smul_right (A B : Matrix n n ℂ) (c : ℂ) :
     frobeniusInner A (c • B) = c * frobeniusInner A B := by
   simp [frobeniusInner, Matrix.mul_smul, trace_smul, smul_eq_mul]
 
+omit [DecidableEq n] in
 /-- Non-negativity of the self inner product: `0 ≤ Re ⟨A, A⟩_F`.
 Follows from `Matrix.posSemidef_conjTranspose_mul_self` and
 `Matrix.PosSemidef.trace_nonneg`. -/
 theorem frobeniusInner_self_nonneg (A : Matrix n n ℂ) :
     0 ≤ (frobeniusInner A A).re := by
-  sorry
+  -- Aᴴ · A is positive semidefinite; trace of PSD matrix has nonneg real part.
+  -- PosSemidef.trace_nonneg gives (0:ℂ) ≤ trace under ComplexOrder; extract
+  -- the real-part inequality via Complex.nonneg_iff.
+  unfold frobeniusInner
+  exact (Complex.nonneg_iff.mp
+    (Matrix.posSemidef_conjTranspose_mul_self A).trace_nonneg).1
 
+omit [DecidableEq n] in
 /-- Definiteness: `⟨A, A⟩_F = 0 ↔ A = 0`. Follows from
 `Matrix.trace_conjTranspose_mul_self_eq_zero_iff`. -/
 theorem frobeniusInner_self_eq_zero_iff (A : Matrix n n ℂ) :
     frobeniusInner A A = 0 ↔ A = 0 := by
-  sorry
+  -- Direct application of trace_conjTranspose_mul_self_eq_zero_iff.
+  unfold frobeniusInner
+  exact Matrix.trace_conjTranspose_mul_self_eq_zero_iff
 
 /-! ## Trace Cauchy-Schwarz (downstream of the InnerProductSpace instance)
 
