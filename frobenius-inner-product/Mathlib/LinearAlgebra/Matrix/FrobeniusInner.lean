@@ -68,6 +68,19 @@ theorem frobeniusInner_add_right (A B C : Matrix n n ℂ) :
   unfold frobeniusInner
   rw [mul_add, trace_add]
 
+/-- Additivity in the first argument: `⟨A + B, C⟩_F = ⟨A, C⟩_F + ⟨B, C⟩_F`. -/
+theorem frobeniusInner_add_left (A B C : Matrix n n ℂ) :
+    frobeniusInner (A + B) C = frobeniusInner A C + frobeniusInner B C := by
+  unfold frobeniusInner
+  rw [Matrix.conjTranspose_add, add_mul, trace_add]
+
+/-- Conjugate linearity in the first argument: `⟨c • A, B⟩_F = star c * ⟨A, B⟩_F`. -/
+theorem frobeniusInner_smul_left (A B : Matrix n n ℂ) (c : ℂ) :
+    frobeniusInner (c • A) B = star c * frobeniusInner A B := by
+  unfold frobeniusInner
+  rw [Matrix.conjTranspose_smul, Matrix.smul_mul, trace_smul, smul_eq_mul,
+      RCLike.star_def]
+
 /-- Linearity in the second argument: `⟨A, c • B⟩_F = c * ⟨A, B⟩_F`. -/
 theorem frobeniusInner_smul_right (A B : Matrix n n ℂ) (c : ℂ) :
     frobeniusInner A (c • B) = c * frobeniusInner A B := by
@@ -95,21 +108,54 @@ theorem frobeniusInner_self_eq_zero_iff (A : Matrix n n ℂ) :
   unfold frobeniusInner
   exact Matrix.trace_conjTranspose_mul_self_eq_zero_iff
 
-/-! ## Trace Cauchy-Schwarz (downstream of the InnerProductSpace instance)
+/-! ## InnerProductSpace registration and trace Cauchy-Schwarz
 
-Once the `InnerProductSpace ℂ (Matrix n n ℂ)` instance below is registered,
-Mathlib's existing `inner_mul_le_norm_mul_norm` immediately yields trace
-Cauchy-Schwarz: `|Tr(Aᴴ · B)|² ≤ Tr(Aᴴ · A) · Tr(Bᴴ · B)`. A convenience
-wrapper exposing this in matrix-trace form is included below.
+Bundle the five algebraic-axiom theorems above into an `InnerProductSpace.Core`
+instance, then derive `InnerProductSpace ℂ (Matrix n n ℂ)` via
+`InnerProductSpace.ofCore`. With the instance in scope, trace Cauchy-Schwarz
+is a direct corollary of Mathlib's general `inner_mul_le_norm_mul_norm`.
 -/
+
+/-- The `Inner ℂ (Matrix n n ℂ)` instance backing the Frobenius inner product. -/
+noncomputable instance : Inner ℂ (Matrix n n ℂ) := ⟨frobeniusInner⟩
+
+/-- The `InnerProductSpace.Core` bundle for the Frobenius inner product on
+`Matrix n n ℂ`. Combines conjugate symmetry, additivity in the first argument,
+conjugate-scalar linearity in the first argument, self-positive, and definite. -/
+noncomputable def frobeniusInnerProductCore :
+    InnerProductSpace.Core ℂ (Matrix n n ℂ) where
+  inner := frobeniusInner
+  conj_inner_symm A B := (frobeniusInner_conj_symm B A).symm
+  re_inner_nonneg := frobeniusInner_self_nonneg
+  add_left := frobeniusInner_add_left
+  smul_left := frobeniusInner_smul_left
+  definite A := (frobeniusInner_self_eq_zero_iff A).mp
 
 /-- Trace Cauchy-Schwarz: the standard Cauchy-Schwarz inequality on the
 Frobenius inner product, expressed in matrix-trace form. Direct corollary
-of `inner_mul_le_norm_mul_norm` applied to the `InnerProductSpace ℂ` instance
-on `Matrix n n ℂ`. -/
+of `PreInnerProductSpace.Core.inner_mul_inner_self_le` applied to the Core
+instance built from our five algebraic-axiom theorems. -/
 theorem trace_cauchy_schwarz (A B : Matrix n n ℂ) :
     Complex.normSq (frobeniusInner A B) ≤
       (frobeniusInner A A).re * (frobeniusInner B B).re := by
-  sorry
+  -- Scope the Core instance locally; the auto-instance in Mathlib derives
+  -- the PreInnerProductSpace.Core needed by inner_mul_inner_self_le.
+  letI : InnerProductSpace.Core ℂ (Matrix n n ℂ) := frobeniusInnerProductCore
+  -- The Core CS lemma gives ‖⟪A,B⟫‖ * ‖⟪B,A⟫‖ ≤ re⟨A,A⟩ * re⟨B,B⟩.
+  have h := InnerProductSpace.Core.inner_mul_inner_self_le (𝕜 := ℂ) A B
+  -- Bridge ‖⟪A,B⟫‖ * ‖⟪B,A⟫‖ to Complex.normSq ⟪A,B⟫ via conj symmetry
+  -- (‖⟪B,A⟫‖ = ‖conj ⟪A,B⟫‖ = ‖⟪A,B⟫‖) and the identity ‖z‖² = normSq z.
+  have h_symm : ‖(inner ℂ B A : ℂ)‖ = ‖(inner ℂ A B : ℂ)‖ := by
+    rw [show (inner ℂ B A : ℂ) = star (inner ℂ A B) from
+      (InnerProductSpace.Core.inner_conj_symm (𝕜 := ℂ) B A).symm]
+    exact Complex.norm_conj _
+  rw [h_symm] at h
+  rw [show (frobeniusInner A B) = (inner ℂ A B : ℂ) from rfl,
+      show (frobeniusInner A A) = (inner ℂ A A : ℂ) from rfl,
+      show (frobeniusInner B B) = (inner ℂ B B : ℂ) from rfl,
+      Complex.normSq_eq_norm_sq]
+  calc ‖(inner ℂ A B : ℂ)‖ ^ 2
+      = ‖(inner ℂ A B : ℂ)‖ * ‖(inner ℂ A B : ℂ)‖ := sq _
+    _ ≤ _ := h
 
 end Matrix
