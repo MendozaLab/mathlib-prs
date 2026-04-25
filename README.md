@@ -52,6 +52,10 @@ Contributions move through the following stages before upstream submission:
 - **Axioms in staging**: Axioms are allowed and encouraged in staging files when supporting Mathlib infrastructure is not yet available. Mandatory rule: every axiom must have a citation comment.
 - **Build artifacts**: `.lake/` and `lake-manifest.json` changes are gitignored. Do not commit build artifacts.
 
+## Tooling
+
+Files in this repository are prepared with assistance from Anthropic's Claude (Claude Code CLI) for proof drafting, Mathlib API search, and tactic iteration. All mathematical statements, axiom citations, and proof tactics are author-verified against Mathlib v4.27.0 source and the cited textbook references. The author is responsible for the final content.
+
 ## Author
 
 Kenneth A. Mendoza ([MendozaLab](https://mendozalab.io))
