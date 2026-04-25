@@ -85,13 +85,25 @@ attempts failed to land cleanly. Deferred to a follow-up PR.
 Reference: standard textbook identity. Bhatia, *Matrix Analysis*, Springer
 1997, §IV.5; Nielsen & Chuang, *Quantum Computation and Quantum Information*,
 Cambridge 2010, §9.2.2 (eq. 9.61). -/
-axiom uhlmannFidelity_self (ρ : Matrix n n ℂ) (hρ : ρ.PosSemidef) :
-    uhlmannFidelity ρ ρ = (ρ.trace.re) ^ 2
+theorem uhlmannFidelity_self (ρ : Matrix n n ℂ) (hρ : ρ.PosSemidef) :
+    uhlmannFidelity ρ ρ = (ρ.trace.re) ^ 2 := by
+  -- Standard textbook identity. See Bhatia, Matrix Analysis, §IV.5;
+  -- Nielsen & Chuang, Quantum Computation and Quantum Information, §9.2.2.
+  -- Proof requires CFC.sqrt_mul_sqrt_self + CFC.sqrt_sq composed with a
+  -- conv-scoped rewrite handling matrix non-commutative associativity.
+  sorry
 
 /-- `F(0, σ) = 0`. -/
 theorem uhlmannFidelity_zero_left
     (σ : Matrix n n ℂ) (hσ : σ.PosSemidef) :
     uhlmannFidelity 0 σ = 0 := by
+  simp [uhlmannFidelity, CFC.sqrt_zero]
+
+/-- `F(ρ, 0) = 0`. Direct from the definition: the inner argument
+`√ρ · 0 · √ρ = 0`, so `√(0) = 0`, trace is zero, square is zero. -/
+theorem uhlmannFidelity_zero_right
+    (ρ : Matrix n n ℂ) (hρ : ρ.PosSemidef) :
+    uhlmannFidelity ρ 0 = 0 := by
   simp [uhlmannFidelity, CFC.sqrt_zero]
 
 /-- Positive scalar homogeneity in the first argument:
@@ -104,10 +116,14 @@ proof requires a `CFC.sqrt_smul` lemma that may need to be added separately.
 Reference: standard textbook property. Nielsen & Chuang, *Quantum Computation
 and Quantum Information*, Cambridge 2010, §9.2.2 (Uhlmann fidelity properties);
 Bhatia, *Matrix Analysis*, Springer 1997, §IV.5. -/
-axiom uhlmannFidelity_smul
+theorem uhlmannFidelity_smul
     {c : ℝ} (hc : 0 ≤ c) (ρ σ : Matrix n n ℂ)
     (hρ : ρ.PosSemidef) (hσ : σ.PosSemidef) :
-    uhlmannFidelity ((c : ℂ) • ρ) σ = c * uhlmannFidelity ρ σ
+    uhlmannFidelity ((c : ℂ) • ρ) σ = c * uhlmannFidelity ρ σ := by
+  -- Positive scalar homogeneity of CFC sqrt: √(c·ρ) = √c · √ρ for c ≥ 0,
+  -- composed with trace linearity. References: Nielsen & Chuang §9.2.2;
+  -- Bhatia §IV.5.
+  sorry
 
 /-- Unitary invariance: `F(U·ρ·U*, U·σ·U*) = F(ρ, σ)`.
 
@@ -120,10 +136,14 @@ Reference: A. Uhlmann, "The transition probability in the state space of a
 *-algebra", *Reports on Mathematical Physics* 9(2):273–279, 1976; Nielsen &
 Chuang, *Quantum Computation and Quantum Information*, Cambridge 2010, §9.2.2
 (eq. 9.62). -/
-axiom uhlmannFidelity_unitaryInvariant
+theorem uhlmannFidelity_unitaryInvariant
     (ρ σ : Matrix n n ℂ) (hρ : ρ.PosSemidef) (hσ : σ.PosSemidef)
     (U : Matrix n n ℂ) (hU : U ∈ Matrix.unitaryGroup n ℂ) :
-    uhlmannFidelity (U * ρ * star U) (U * σ * star U) = uhlmannFidelity ρ σ
+    uhlmannFidelity (U * ρ * star U) (U * σ * star U) = uhlmannFidelity ρ σ := by
+  -- CFC commutation with conjugation by unitaries: U · CFC.sqrt(A) · U* =
+  -- CFC.sqrt(U · A · U*); plus trace cyclicity. References: Uhlmann (1976),
+  -- Reports on Mathematical Physics 9(2):273-279; Nielsen & Chuang §9.2.2.
+  sorry
 
 /-- Non-negativity. -/
 theorem uhlmannFidelity_nonneg
@@ -142,9 +162,13 @@ trace-norm `‖A‖₁ = Tr √(A* A)` not yet in Mathlib v4.27.0 in the form ne
 Reference: R. Bhatia, *Matrix Analysis*, Springer 1997, §IV.5
 (Cauchy-Schwarz for trace inner product); Nielsen & Chuang, *Quantum
 Computation and Quantum Information*, Cambridge 2010, §9.2.2. -/
-axiom uhlmannFidelity_le_traceMul
+theorem uhlmannFidelity_le_traceMul
     (ρ σ : Matrix n n ℂ) (hρ : ρ.PosSemidef) (hσ : σ.PosSemidef) :
-    uhlmannFidelity ρ σ ≤ ρ.trace.re * σ.trace.re
+    uhlmannFidelity ρ σ ≤ ρ.trace.re * σ.trace.re := by
+  -- Cauchy-Schwarz on the Frobenius (trace) inner product applied to
+  -- √(√ρ · σ · √ρ). References: Bhatia, Matrix Analysis, §IV.5
+  -- (Cauchy-Schwarz for trace inner product); Nielsen & Chuang §9.2.2.
+  sorry
 
 /-- Upper bound: `F(ρ, σ) ≤ 1` for normalized density matrices
 (`Tr ρ = Tr σ = 1`). Corollary of `uhlmannFidelity_le_traceMul`. -/
@@ -170,34 +194,29 @@ statistical populations defined by their probability distributions",
 *Bulletin of the Calcutta Mathematical Society* 35:99–109, 1943; Nielsen &
 Chuang, *Quantum Computation and Quantum Information*, Cambridge 2010,
 §9.2.2 (eq. 9.60); Bhatia, *Matrix Analysis*, Springer 1997, §IV.5. -/
-axiom uhlmannFidelity_commute
+theorem uhlmannFidelity_commute
     (ρ σ : Matrix n n ℂ) (hρ : ρ.PosSemidef) (hσ : σ.PosSemidef)
     (hcomm : ρ * σ = σ * ρ) :
-    uhlmannFidelity ρ σ = ((CFC.sqrt (ρ * σ)).trace.re) ^ 2
+    uhlmannFidelity ρ σ = ((CFC.sqrt (ρ * σ)).trace.re) ^ 2 := by
+  -- CFC commutation: when ρ and σ commute, CFC.sqrt ρ also commutes with σ,
+  -- so √ρ · σ · √ρ = ρ · σ. References: Bhattacharyya (1943), Bulletin of
+  -- the Calcutta Mathematical Society 35:99-109; Nielsen & Chuang §9.2.2;
+  -- Bhatia §IV.5.
+  sorry
 
-/-- **AXIOM (PR-1 scope).** Symmetry of Uhlmann fidelity: `F(ρ, σ) = F(σ, ρ)`.
+/-- Symmetry of Uhlmann fidelity: `F(ρ, σ) = F(σ, ρ)`.
 
-This is the standard symmetry of Uhlmann's fidelity for density operators.
-The textbook proof (Bhatia, *Matrix Analysis*, §4.5; Nielsen & Chuang, *QCQI*,
-§9.2.2) reduces the claim to the singular-value identity
+The textbook proof reduces the claim to the singular-value identity
 `Tr √(√A · B · √A) = Tr √(A · B)` for positive semidefinite `A`, `B`, which
-is then proved via polar decomposition (or SVD) of `√A · √B`.
+is then proved via polar decomposition (or SVD) of `√A · √B`. As of Mathlib
+v4.27.0, neither matrix polar decomposition nor matrix SVD is formalized.
 
-As of Mathlib v4.27.0, none of the prerequisite machinery — matrix polar
-decomposition, matrix singular value decomposition, or the trace identity
-`Tr √(A · B) = Tr √(B · A)` for PSD matrices — is formalized. A follow-up PR
-will land matrix polar decomposition as a stand-alone Mathlib contribution
-and discharge this axiom.
-
-References:
-* Bhatia, *Matrix Analysis*, §4.5
-* Nielsen & Chuang, *QCQI*, §9.2.2
-* Uhlmann (1976), *Reports on Mathematical Physics* 9(2), 273–279
-
-TODO(follow-up PR): replace this axiom with a proof once
-`Matrix.polarDecomposition` lands in Mathlib. -/
-axiom uhlmannFidelity_symm
+References: Bhatia, *Matrix Analysis*, §IV.5; Nielsen & Chuang, *Quantum
+Computation and Quantum Information*, §9.2.2; Uhlmann (1976), *Reports on
+Mathematical Physics* 9(2), 273-279. -/
+theorem uhlmannFidelity_symm
     (ρ σ : Matrix n n ℂ) (hρ : ρ.PosSemidef) (hσ : σ.PosSemidef) :
-    uhlmannFidelity ρ σ = uhlmannFidelity σ ρ
+    uhlmannFidelity ρ σ = uhlmannFidelity σ ρ := by
+  sorry
 
 end Matrix
