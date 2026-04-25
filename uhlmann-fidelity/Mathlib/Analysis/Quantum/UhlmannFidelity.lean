@@ -7,6 +7,7 @@ import Mathlib.LinearAlgebra.Matrix.PosDef
 import Mathlib.Analysis.SpecialFunctions.ContinuousFunctionalCalculus.Rpow.Basic
 import Mathlib.Analysis.Matrix.Order
 import Mathlib.Analysis.Matrix.Normed
+import Mathlib.Analysis.CStarAlgebra.ContinuousFunctionalCalculus.Commute
 
 open scoped ComplexOrder MatrixOrder
 
@@ -71,7 +72,18 @@ variable {n : Type*} [Fintype n] [DecidableEq n]
 /-- The Uhlmann quantum fidelity between two density matrices `ρ` and `σ`,
 defined as `F(ρ, σ) = (Tr √(√ρ · σ · √ρ))²`. The square root is the unique
 positive semidefinite square root provided by the continuous functional
-calculus on Hermitian PSD matrices. -/
+calculus on Hermitian PSD matrices.
+
+This file uses the **squared** fidelity convention. The unsquared form
+`Tr √(√ρ · σ · √ρ)` is sometimes called the Uhlmann transition probability
+amplitude or fidelity (Watrous 2018, §3.3); the squared form is the
+"fidelity" of Nielsen-Chuang 2010 (eq. 9.53).
+
+The definition is total: it accepts any two `Matrix n n ℂ` arguments without
+positive-semidefinite or Hermitian hypotheses. The continuous functional
+calculus provides junk values on non-PSD inputs. All meaningful properties
+(symmetry, unitary invariance, Cauchy-Schwarz bounds, the commuting case)
+are stated under explicit `PosSemidef` hypotheses on `ρ` and `σ`. -/
 noncomputable def uhlmannFidelity (ρ σ : Matrix n n ℂ) : ℝ :=
   ((CFC.sqrt (CFC.sqrt ρ * σ * CFC.sqrt ρ)).trace.re) ^ 2
 
@@ -147,7 +159,7 @@ theorem uhlmannFidelity_unitaryInvariant
 
 /-- Non-negativity. -/
 theorem uhlmannFidelity_nonneg
-    (ρ σ : Matrix n n ℂ) (hρ : ρ.PosSemidef) (hσ : σ.PosSemidef) :
+    (ρ σ : Matrix n n ℂ) (_hρ : ρ.PosSemidef) (_hσ : σ.PosSemidef) :
     0 ≤ uhlmannFidelity ρ σ := by
   unfold uhlmannFidelity
   exact sq_nonneg _
@@ -166,8 +178,13 @@ theorem uhlmannFidelity_le_traceMul
     (ρ σ : Matrix n n ℂ) (hρ : ρ.PosSemidef) (hσ : σ.PosSemidef) :
     uhlmannFidelity ρ σ ≤ ρ.trace.re * σ.trace.re := by
   -- Cauchy-Schwarz on the Frobenius (trace) inner product applied to
-  -- √(√ρ · σ · √ρ). References: Bhatia, Matrix Analysis, §IV.5
-  -- (Cauchy-Schwarz for trace inner product); Nielsen & Chuang §9.2.2.
+  -- √(√ρ · σ · √ρ). The required Frobenius inner product on `Matrix n n ℂ`
+  -- and the trace Cauchy-Schwarz lifting are not yet in Mathlib v4.27.0
+  -- but are staged at MendozaLab/mathlib-prs:frobenius-inner-product/.
+  -- Once that contribution merges upstream, this proof closes via
+  -- `Matrix.trace_cauchy_schwarz` plus a bridging step from the
+  -- `Complex.normSq` form to the `≤ Tr ρ * Tr σ` upper bound.
+  -- References: Bhatia, Matrix Analysis, §IV.5; Nielsen & Chuang §9.2.2.
   sorry
 
 /-- Upper bound: `F(ρ, σ) ≤ 1` for normalized density matrices
@@ -184,36 +201,49 @@ theorem uhlmannFidelity_le_one
 `(Tr √(ρ · σ))²`, which on a common eigenbasis is the classical
 Bhattacharyya coefficient squared.
 
-**AXIOM (PR-1 scope).** Follows from CFC commutation: when `ρ` and `σ`
-commute, `CFC.sqrt ρ` also commutes with `σ`, so `√ρ · σ · √ρ = ρ · σ`. The
-CFC-commute lemma in the exact form needed is not directly available in
-Mathlib v4.27.0.
+Proof strategy: `CFC.sqrt ρ` commutes with anything that commutes with `ρ`
+(via `Commute.cfc_nnreal` applied to `NNReal.sqrt`), so `√ρ · σ = σ · √ρ`.
+Then `√ρ · σ · √ρ = σ · √ρ · √ρ = σ · ρ = ρ · σ` using
+`CFC.sqrt_mul_sqrt_self` and the commutation hypothesis.
 
-Reference: A. Bhattacharyya, "On a measure of divergence between two
-statistical populations defined by their probability distributions",
-*Bulletin of the Calcutta Mathematical Society* 35:99–109, 1943; Nielsen &
-Chuang, *Quantum Computation and Quantum Information*, Cambridge 2010,
-§9.2.2 (eq. 9.60); Bhatia, *Matrix Analysis*, Springer 1997, §IV.5. -/
+References: Bhattacharyya (1943), Bulletin of the Calcutta Mathematical
+Society 35:99-109; Nielsen & Chuang §9.2.2; Bhatia §IV.5. -/
 theorem uhlmannFidelity_commute
-    (ρ σ : Matrix n n ℂ) (hρ : ρ.PosSemidef) (hσ : σ.PosSemidef)
+    (ρ σ : Matrix n n ℂ) (hρ : ρ.PosSemidef) (_hσ : σ.PosSemidef)
     (hcomm : ρ * σ = σ * ρ) :
     uhlmannFidelity ρ σ = ((CFC.sqrt (ρ * σ)).trace.re) ^ 2 := by
-  -- CFC commutation: when ρ and σ commute, CFC.sqrt ρ also commutes with σ,
-  -- so √ρ · σ · √ρ = ρ · σ. References: Bhattacharyya (1943), Bulletin of
-  -- the Calcutta Mathematical Society 35:99-109; Nielsen & Chuang §9.2.2;
-  -- Bhatia §IV.5.
-  sorry
+  unfold uhlmannFidelity
+  have h_sqrt_comm : CFC.sqrt ρ * σ = σ * CFC.sqrt ρ := by
+    have hcomm' : Commute ρ σ := hcomm
+    have hsq_comm : Commute (CFC.sqrt ρ) σ := by
+      rw [CFC.sqrt_eq_cfc]
+      exact hcomm'.cfc_nnreal NNReal.sqrt
+    exact hsq_comm
+  have h_inner : CFC.sqrt ρ * σ * CFC.sqrt ρ = ρ * σ := by
+    rw [show CFC.sqrt ρ * σ = σ * CFC.sqrt ρ from h_sqrt_comm]
+    rw [mul_assoc, CFC.sqrt_mul_sqrt_self ρ hρ.nonneg]
+    exact hcomm.symm
+  rw [h_inner]
 
 /-- Symmetry of Uhlmann fidelity: `F(ρ, σ) = F(σ, ρ)`.
 
-The textbook proof reduces the claim to the singular-value identity
-`Tr √(√A · B · √A) = Tr √(A · B)` for positive semidefinite `A`, `B`, which
-is then proved via polar decomposition (or SVD) of `√A · √B`. As of Mathlib
-v4.27.0, neither matrix polar decomposition nor matrix SVD is formalized.
+The textbook proof reduces the claim to the equality of singular values of
+`√A · √B` viewed via its polar decomposition: `√A · √B = U · |√A · √B|`
+with `|X| := √(Xᴴ · X)`, and the singular values of `X` and `Xᴴ` coincide.
+This avoids the formally-delicate object `√(A · B)` for non-commuting PSD
+`A`, `B` (where `A · B` need not be Hermitian) and instead works only with
+square roots of Hermitian PSD matrices, where the continuous functional
+calculus is well-defined.
 
-References: Bhatia, *Matrix Analysis*, §IV.5; Nielsen & Chuang, *Quantum
-Computation and Quantum Information*, §9.2.2; Uhlmann (1976), *Reports on
-Mathematical Physics* 9(2), 273-279. -/
+The required singular-value-decomposition machinery for matrices is not yet
+in Mathlib v4.27.0. Polar decomposition `M = U · |M|` is the gating
+prerequisite; once that lands, this proof closes via the standard
+trace-of-singular-values argument.
+
+References: Bhatia, *Matrix Analysis*, §IV.5 (singular values), §VII.1
+(polar decomposition); Nielsen & Chuang, *Quantum Computation and Quantum
+Information*, §9.2.2; Uhlmann (1976), *Reports on Mathematical Physics*
+9(2), 273-279. -/
 theorem uhlmannFidelity_symm
     (ρ σ : Matrix n n ℂ) (hρ : ρ.PosSemidef) (hσ : σ.PosSemidef) :
     uhlmannFidelity ρ σ = uhlmannFidelity σ ρ := by
