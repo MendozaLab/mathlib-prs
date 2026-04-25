@@ -18,7 +18,9 @@ Each subdirectory's own README documents its specific scope, axiom inventory, an
 
 | Subdirectory | Mathlib pin | Target path | Build | Scope | Status |
 |---|---|---|---|---|---|
-| `uhlmann-fidelity` | v4.27.0 | `Mathlib/Analysis/Quantum/UhlmannFidelity.lean` | PASS | Proof architecture (1 definition + 3 proven theorems + 6 axioms) | Staged, not yet submitted |
+| `uhlmann-fidelity` | v4.27.0 | `Mathlib/Analysis/Quantum/UhlmannFidelity.lean` | PASS | 1 definition + 4 proven theorems + 6 placeholder theorems with literature citations | Staged, not yet submitted |
+| `cfc-matrix-commutation` | v4.27.0 | `Mathlib/LinearAlgebra/Matrix/CFCCommute.lean` | Pending first build | 2 matrix-specific corollaries of `IsSelfAdjoint.commute_cfcHom` (prerequisite for `uhlmann-fidelity`) | Scaffolded, not yet submitted |
+| `frobenius-inner-product` | v4.27.0 | `Mathlib/LinearAlgebra/Matrix/FrobeniusInner.lean` | Pending first build | 1 definition + 5 algebraic-property theorems + Cauchy-Schwarz lifting + `InnerProductSpace ℂ` instance on `Matrix n n ℂ` (prerequisite for trace Cauchy-Schwarz, downstream of `uhlmann-fidelity`) | Scaffolded, not yet submitted |
 
 ## Building locally
 

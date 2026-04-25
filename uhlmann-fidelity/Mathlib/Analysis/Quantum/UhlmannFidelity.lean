@@ -95,14 +95,14 @@ theorem uhlmannFidelity_self (ρ : Matrix n n ℂ) (hρ : ρ.PosSemidef) :
 
 /-- `F(0, σ) = 0`. -/
 theorem uhlmannFidelity_zero_left
-    (σ : Matrix n n ℂ) (hσ : σ.PosSemidef) :
+    (σ : Matrix n n ℂ) (_hσ : σ.PosSemidef) :
     uhlmannFidelity 0 σ = 0 := by
   simp [uhlmannFidelity, CFC.sqrt_zero]
 
 /-- `F(ρ, 0) = 0`. Direct from the definition: the inner argument
 `√ρ · 0 · √ρ = 0`, so `√(0) = 0`, trace is zero, square is zero. -/
 theorem uhlmannFidelity_zero_right
-    (ρ : Matrix n n ℂ) (hρ : ρ.PosSemidef) :
+    (ρ : Matrix n n ℂ) (_hρ : ρ.PosSemidef) :
     uhlmannFidelity ρ 0 = 0 := by
   simp [uhlmannFidelity, CFC.sqrt_zero]
 
@@ -173,10 +173,10 @@ theorem uhlmannFidelity_le_traceMul
 /-- Upper bound: `F(ρ, σ) ≤ 1` for normalized density matrices
 (`Tr ρ = Tr σ = 1`). Corollary of `uhlmannFidelity_le_traceMul`. -/
 theorem uhlmannFidelity_le_one
-    (ρ σ : Matrix n n ℂ) (hρ : ρ.PosSemidef) (hσ : σ.PosSemidef)
+    (ρ σ : Matrix n n ℂ) (_hρ : ρ.PosSemidef) (_hσ : σ.PosSemidef)
     (hρ_tr : ρ.trace = 1) (hσ_tr : σ.trace = 1) :
     uhlmannFidelity ρ σ ≤ 1 := by
-  have h := uhlmannFidelity_le_traceMul ρ σ hρ hσ
+  have h := uhlmannFidelity_le_traceMul ρ σ _hρ _hσ
   rw [hρ_tr, hσ_tr] at h
   simpa using h
 
