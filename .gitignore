@@ -1,0 +1,15 @@
+# Lake build artifacts (heavy — 9.6GB+)
+.lake/
+build/
+*.olean
+*.olean.hash
+
+# Editor
+.DS_Store
+*.swp
+*~
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
