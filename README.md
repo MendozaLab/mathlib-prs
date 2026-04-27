@@ -19,8 +19,10 @@ Each subdirectory's own README documents its specific scope, axiom inventory, an
 | Subdirectory | Mathlib pin | Target path | Build | Scope | Status |
 |---|---|---|---|---|---|
 | `uhlmann-fidelity` | v4.27.0 | `Mathlib/Analysis/Quantum/UhlmannFidelity.lean` | PASS | 1 definition + 4 proven theorems + 6 placeholder theorems with literature citations | Staged, not yet submitted |
-| `cfc-matrix-commutation` | v4.27.0 | `Mathlib/LinearAlgebra/Matrix/CFCCommute.lean` | Pending first build | 2 matrix-specific corollaries of `IsSelfAdjoint.commute_cfcHom` (prerequisite for `uhlmann-fidelity`) | Scaffolded, not yet submitted |
-| `frobenius-inner-product` | v4.27.0 | `Mathlib/LinearAlgebra/Matrix/FrobeniusInner.lean` | Pending first build | 1 definition + 5 algebraic-property theorems + Cauchy-Schwarz lifting + `InnerProductSpace ℂ` instance on `Matrix n n ℂ` (prerequisite for trace Cauchy-Schwarz, downstream of `uhlmann-fidelity`) | Scaffolded, not yet submitted |
+| `cfc-matrix-commutation` | v4.27.0 | `Mathlib/LinearAlgebra/Matrix/CFCCommute.lean` | PASS | 2 matrix-specific corollaries of `IsSelfAdjoint.commute_cfcHom` (prerequisite for `uhlmann-fidelity`) | Staged, not yet submitted |
+| `frobenius-inner-product` | v4.27.0 | `Mathlib/LinearAlgebra/Matrix/FrobeniusInner.lean` | PASS | 1 definition + 7 proven theorems + Cauchy-Schwarz lifting + `InnerProductSpace ℂ` instance on `Matrix n n ℂ` | Staged, not yet submitted |
+| `koopman-operator` | v4.27.0 | `Mathlib/Dynamics/Ergodic/Koopman.lean` | Pending first build | 1 definition + 5 theorems for the Koopman operator `U_T f = f ∘ T` on `L²` of a measure-preserving system; foundational object for ergodic theory and Koopman–von Neumann theory | Scaffolded, not yet submitted |
+| `delay-coordinate-map` | v4.27.0 | `Mathlib/Dynamics/DelayCoordinateMap.lean` | Pending first build | 1 definition + 3 theorems for the delay-coordinate map `x ↦ (φ(x), φ(Tx), …, φ(Tⁿx))`; named object underlying Takens 1981 (embedding theorem itself out of scope) | Scaffolded, not yet submitted |
 
 ## Building locally
 
