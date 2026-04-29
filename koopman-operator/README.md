@@ -6,9 +6,9 @@ Staging directory for a Mathlib4 pull request that adds the canonical Koopman op
 
 | Gate | Status |
 |---|---|
-| Compilation gate (lake build PASS against Mathlib v4.27.0) | Pending — first build run not yet executed |
-| Sorry count target for v1 | 0 (proofs are mechanical; current scaffold has placeholders for cycle-1 build) |
-| Upstream PR | Not yet submitted |
+| Compilation gate | PASS on 2026-04-29 against Mathlib `master` at `95dcb74bf07a3a4f6828034c836a45b8fe7c6ca8` |
+| Sorry / axiom count | 0 executable `sorry`, 0 executable `axiom` |
+| Upstream PR | Prepared locally; not yet submitted |
 
 ## Scope
 
@@ -17,7 +17,8 @@ One definition + five proven theorems in the `MeasureTheory` namespace:
 - `Koopman T hT` — the Koopman linear isometry on `Lp ℂ 2 μ`
 - `Koopman_apply` — `(Koopman T hT f) =ᵐ[μ] f ∘ T`
 - `Koopman_id` — Koopman of the identity is the identity isometry
-- `Koopman_comp` — Koopman respects composition of measure-preserving maps
+- `Koopman_comp` — Koopman is contravariantly functorial under composition:
+  `Koopman (T ∘ S) _ = (Koopman S _).comp (Koopman T _)`
 - `Koopman_const` — constant functions are fixed
 - `Koopman_iterate` — `Koopman (T^[n]) = (Koopman T)^n`
 
@@ -33,17 +34,16 @@ One definition + five proven theorems in the `MeasureTheory` namespace:
 
 ## Mathlib infrastructure dependencies
 
-- `Mathlib.MeasureTheory.Function.LpSpace.Basic` — `Lp`, `Lp.indicatorConstLp`
+- `Mathlib.MeasureTheory.Function.LpSpace.Indicator` — `Lp`, `Lp.const`
 - `Mathlib.Dynamics.Ergodic.MeasurePreserving` — `MeasurePreserving`, `MeasurePreserving.id`, `MeasurePreserving.comp`, `MeasurePreserving.iterate`
-- `Mathlib.Analysis.NormedSpace.LinearIsometry` — `LinearIsometry`, `LinearIsometry.id`, `LinearIsometry.comp`
-- `Mathlib.Analysis.NormedSpace.OperatorNorm.Basic` — for the bounded-operator infrastructure
+- `Mathlib.Analysis.Normed.Operator.LinearIsometry` — `LinearIsometry`, `LinearIsometry.id`, `LinearIsometry.comp`
 
 ## Building
 
 ```bash
 cd koopman-operator
-lake update    # downloads pinned Mathlib v4.27.0 (~2-5 GB on first run; cached after)
-lake build     # subsequent builds use cached artifacts
+lake update
+lake build Mathlib.Dynamics.Ergodic.Koopman
 ```
 
 ## Downstream uses (post-merge)
@@ -60,4 +60,4 @@ lake build     # subsequent builds use cached artifacts
 
 ## Tooling and acknowledgments
 
-This file was prepared with assistance from Anthropic's Claude (Claude Code CLI) for proof drafting, Mathlib API search, and tactic iteration. All theorem statements and proof tactics are author-verified against Mathlib v4.27.0 source. The author is responsible for the final content.
+This file was prepared with local proof-search assistance for API search and tactic iteration. All theorem statements and proof tactics are author-verified against Mathlib `master` at `95dcb74bf07a3a4f6828034c836a45b8fe7c6ca8`. The author is responsible for the final content.

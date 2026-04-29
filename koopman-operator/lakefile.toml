@@ -4,7 +4,7 @@ defaultTargets = ["KoopmanOperator"]
 [[require]]
 name = "mathlib"
 scope = "leanprover-community"
-version = "git#v4.27.0"
+version = "git#master"
 
 [[lean_lib]]
 name = "KoopmanOperator"
