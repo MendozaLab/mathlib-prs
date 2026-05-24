@@ -13,3 +13,6 @@ build/
 
 # OS
 Thumbs.db
+
+# 2026-05-24 local symlink into MendozaLab tree; do not commit.
+koopman-operator/MendozaLab
