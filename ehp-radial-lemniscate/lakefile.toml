@@ -1,0 +1,11 @@
+name = "EHPRadialLemniscate"
+defaultTargets = ["EHPRadialLemniscate"]
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+version = "git#v4.27.0"
+
+[[lean_lib]]
+name = "EHPRadialLemniscate"
+roots = ["Mathlib.Analysis.Complex.EHPRadialLemniscate"]
