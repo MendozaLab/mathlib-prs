@@ -5,6 +5,8 @@ Authors: Kenneth A. Mendoza
 -/
 import Mathlib.Dynamics.FixedPoints.Basic
 import Mathlib.Topology.Basic
+import Mathlib.Topology.Constructions
+import Mathlib.Topology.MetricSpace.Basic
 import Mathlib.Data.Fin.Basic
 
 /-!
@@ -75,14 +77,17 @@ def delayCoordinateMap (T : X → X) (φ : X → ℝ) (n : ℕ) (x : X) :
 identity iterate, and `T^[0] x = x`). -/
 theorem delayCoordinateMap_zero (T : X → X) (φ : X → ℝ) (x : X) :
     delayCoordinateMap T φ 0 x = fun _ => φ x := by
-  sorry
+  ext i
+  simp [delayCoordinateMap]
 
 /-- The delay-coordinate map is continuous when both the transformation
 `T` and the observation function `φ` are continuous. -/
 theorem delayCoordinateMap_continuous [TopologicalSpace X] (T : X → X)
     (φ : X → ℝ) (n : ℕ) (hT : Continuous T) (hφ : Continuous φ) :
     Continuous (delayCoordinateMap T φ n) := by
-  sorry
+  refine continuous_pi ?_
+  intro i
+  exact hφ.comp (hT.iterate i.val)
 
 /-- The recursive / extension structure of the delay-coordinate map: the
 length-`(n + 2)` map at index `n + 1` evaluates to `φ ((T^(n+1)) x)`,
@@ -92,6 +97,6 @@ theorem delayCoordinateMap_succ (T : X → X) (φ : X → ℝ) (n : ℕ) (x : X)
     (i : Fin (n + 2)) :
     delayCoordinateMap T φ (n + 1) x i =
       φ ((T^[i.val]) x) := by
-  sorry
+  rfl
 
 end Dynamics
